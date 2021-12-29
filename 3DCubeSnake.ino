@@ -4,8 +4,8 @@
 
 #define LAYER_COUNT 8
 #define COLUMN_COUNT 64
-byte pCube[COLUMN_COUNT];
-bool CubeChanged = false;
+byte TempCube[COLUMN_COUNT];
+byte Cube[COLUMN_COUNT];
 
 #define ANALOG_ARROW A1
 #define BTN_LEFT 18
@@ -181,11 +181,11 @@ void TimerFunction()
   int valWindowLeft = analogRead(ANALOG_WINDOW_LEFT);
   int valSwitch = analogRead(ANALOG_SWITCH);
   
-  if (CubeChanged)
+  if (CubeChanged())
   {
+    CubeSave();
     Serial.write(0xf2);
-    Serial.write(pCube, COLUMN_COUNT);
-    CubeChanged = false;
+    Serial.write(Cube, COLUMN_COUNT);
 
     if (1)
     {
@@ -238,13 +238,31 @@ void TimerFunction()
   }
 }
 
+bool CubeChanged()
+{
+  byte i;
+  for (i = 0; i < 64; i++)
+  {
+    if(TempCube[i] != Cube[i])
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+void CubeSave()
+{
+  byte i;
+  for (i = 0; i < 64; i++)
+  {
+    Cube[i] = TempCube[i];
+  }
+}
+
 void SetCube(int column, int value)
 {
-  if (pCube[column] != value)
-  {
-    pCube[column] = value;
-    CubeChanged = true;
-  }
+    TempCube[column] = value;
 }
 
 bool ValueSimilar(int val, int val2)
